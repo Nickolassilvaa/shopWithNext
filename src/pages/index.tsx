@@ -7,8 +7,10 @@ import camiseta2 from '../assets/2.png'
 import camiseta3 from '../assets/3.png'
 
 import 'keen-slider/keen-slider.min.css'
+import { stripe } from "../lib/stripe"
+import { GetServerSideProps } from "next"
 
-export default function Home() {
+export default function Home(props) {
   const [sliderRef] = useKeenSlider({
     slides: {
       perView: 3,
@@ -18,6 +20,8 @@ export default function Home() {
 
   return (
     <HomeContainer ref={sliderRef} className="keen-slider">
+      <span>{JSON.stringify(props.list)}</span>
+      
       <Product className="keen-slider__slide">
         <Image src={camiseta1} width={520} height={480} alt="" />
         <footer>
@@ -51,4 +55,22 @@ export default function Home() {
       </Product>
     </HomeContainer>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const response = await stripe.products.list({
+    expand: ['data.default_price']
+  })
+  const products = response.data.map(product => {
+    return {
+      id: product.id,
+      name: product.name,
+      imageUrl: product.images[0],
+    }
+  })
+  return {
+    props: {
+      list: [1,2,3]
+    }
+  }
 }
